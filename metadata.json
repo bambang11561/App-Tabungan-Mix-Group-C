@@ -1,0 +1,6 @@
+{
+  "name": "App Tabungan Group C",
+  "description": "Aplikasi pelaporan keuangan dan tabungan secara realtime.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
