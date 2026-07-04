@@ -43,7 +43,7 @@ export const initialUsers: User[] = [
 ];
 
 export const initialTabungan: Tabungan[] = [
-  { id: "t1", userId: "1", amount: 50000, month: "Jul-26", date: "2026-07-01T10:00:00Z" },
+  { id: "t1", userId: "1", amount: 350000, month: "Jul-26", date: "2026-07-01T10:00:00Z" },
   { id: "t2", userId: "2", amount: 50000, month: "Jul-26", date: "2026-07-01T10:05:00Z" },
   { id: "t3", userId: "3", amount: 50000, month: "Jul-26", date: "2026-07-01T10:10:00Z" },
   { id: "t4", userId: "4", amount: 50000, month: "Jul-26", date: "2026-07-02T10:00:00Z" },
@@ -58,6 +58,7 @@ export const initialTabungan: Tabungan[] = [
   { id: "t13", userId: "13", amount: 50000, month: "Jul-26", date: "2026-07-03T09:00:00Z" },
   { id: "t14", userId: "14", amount: 50000, month: "Jul-26", date: "2026-07-03T09:00:00Z" },
   { id: "t15", userId: "15", amount: 50000, month: "Jul-26", date: "2026-07-01T10:00:00Z" },
+  { id: "t16", userId: "16", amount: 50000, month: "Jul-26", date: "2026-07-01T10:00:00Z" },
   { id: "t18", userId: "18", amount: 50000, month: "Jul-26", date: "2026-07-01T10:10:00Z" },
   { id: "t19", userId: "19", amount: 50000, month: "Jul-26", date: "2026-07-02T10:00:00Z" },
   { id: "t20", userId: "20", amount: 50000, month: "Jul-26", date: "2026-07-02T11:00:00Z" },
