@@ -39,7 +39,7 @@ export default function Login() {
             </div>
           </div>
           <CardTitle className="text-2xl font-black tracking-tight text-slate-800">
-            App Tabungan Mix Group C
+            App Tabungan & Kas Mix Group C
           </CardTitle>
           <p className="text-sm font-semibold text-slate-400 uppercase tracking-wider">
             Login ke akun Anda

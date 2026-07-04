@@ -1,0 +1,84 @@
+import React, { useMemo } from "react";
+import { useAppContext } from "../../context/AppContext";
+import { Card, CardHeader, CardTitle, CardContent } from "../../components/ui/card";
+import { formatIDR } from "../../lib/utils";
+
+export default function SaldoTabungan() {
+  const { users, tabungan, pengeluaran } = useAppContext();
+
+  const totalPemasukan = tabungan.reduce((sum, t) => sum + t.amount, 0);
+  const totalPengeluaran = pengeluaran.reduce((sum, p) => sum + p.amount, 0);
+  const totalSaldoKeseluruhan = totalPemasukan - totalPengeluaran;
+
+  const usersSaldo = useMemo(() => {
+    return users.filter(u => u.role === "user").map(u => {
+      const userTabungan = tabungan.filter(t => t.userId === u.id);
+      const total = userTabungan.reduce((sum, t) => sum + t.amount, 0);
+      return { ...u, total };
+    }).sort((a, b) => b.total - a.total);
+  }, [users, tabungan]);
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900">Saldo Tabungan</h1>
+        <p className="text-sm text-slate-500">Lihat total saldo tabungan setiap anggota.</p>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <Card className="bg-emerald-50/50 border-emerald-100">
+          <CardContent className="pt-6">
+            <p className="text-xs font-semibold text-emerald-600 uppercase tracking-wider mb-1">Total Pemasukan</p>
+            <h3 className="text-2xl font-bold text-emerald-900">{formatIDR(totalPemasukan)}</h3>
+          </CardContent>
+        </Card>
+        <Card className="bg-orange-50/50 border-orange-100">
+          <CardContent className="pt-6">
+            <p className="text-xs font-semibold text-orange-600 uppercase tracking-wider mb-1">Total Pengeluaran</p>
+            <h3 className="text-2xl font-bold text-orange-900">{formatIDR(totalPengeluaran)}</h3>
+          </CardContent>
+        </Card>
+        <Card className="bg-blue-50/50 border-blue-100">
+          <CardContent className="pt-6">
+            <p className="text-xs font-semibold text-blue-600 uppercase tracking-wider mb-1">Total Saldo Bersih</p>
+            <h3 className="text-2xl font-bold text-blue-900">{formatIDR(totalSaldoKeseluruhan)}</h3>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Saldo Tabungan Anggota</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto rounded-xl border border-slate-100">
+            <table className="w-full text-sm text-left">
+              <thead className="text-[10px] text-slate-400 font-bold uppercase tracking-wider bg-slate-50 border-b border-slate-100">
+                <tr>
+                  <th className="px-6 py-4">NRP</th>
+                  <th className="px-6 py-4">Nama Anggota</th>
+                  <th className="px-6 py-4 text-right">Total Tabungan</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {usersSaldo.map((u) => (
+                  <tr key={u.id} className="hover:bg-slate-50 transition-colors">
+                    <td className="px-6 py-4 whitespace-nowrap text-slate-500 font-medium">
+                      {u.nrp}
+                    </td>
+                    <td className="px-6 py-4 font-bold text-slate-800">
+                      {u.nama}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right font-black text-emerald-600">
+                      {formatIDR(u.total)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { User, Tabungan, Pengeluaran, Rekening } from "../types";
+import { User, Tabungan, Pengeluaran, UangKas, PengeluaranKas, Rekening } from "../types";
 import { initialUsers, initialTabungan, initialPengeluaran, defaultRekening } from "../data";
 
 interface AppContextType {
@@ -7,14 +7,24 @@ interface AppContextType {
   login: (nrp: string, password?: string) => boolean;
   logout: () => void;
   users: User[];
+  
   tabungan: Tabungan[];
   pengeluaran: Pengeluaran[];
-  rekening: Rekening;
   addTabungan: (data: Omit<Tabungan, "id">) => void;
   deleteTabungan: (id: string) => void;
   addPengeluaran: (data: Omit<Pengeluaran, "id">) => void;
   deletePengeluaran: (id: string) => void;
+
+  uangKas: UangKas[];
+  pengeluaranKas: PengeluaranKas[];
+  addUangKas: (data: Omit<UangKas, "id">) => void;
+  deleteUangKas: (id: string) => void;
+  addPengeluaranKas: (data: Omit<PengeluaranKas, "id">) => void;
+  deletePengeluaranKas: (id: string) => void;
+
+  rekening: Rekening;
   updateRekening: (data: Rekening) => void;
+  
   addUser: (data: Omit<User, "id">) => void;
   editUser: (id: string, data: Partial<User>) => void;
   deleteUser: (id: string) => void;
@@ -43,6 +53,16 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     return saved ? JSON.parse(saved) : initialPengeluaran;
   });
 
+  const [uangKas, setUangKas] = useState<UangKas[]>(() => {
+    const saved = localStorage.getItem("uangKas");
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  const [pengeluaranKas, setPengeluaranKas] = useState<PengeluaranKas[]>(() => {
+    const saved = localStorage.getItem("pengeluaranKas");
+    return saved ? JSON.parse(saved) : [];
+  });
+
   const [rekening, setRekening] = useState<Rekening>(() => {
     const saved = localStorage.getItem("rekening");
     return saved ? JSON.parse(saved) : defaultRekening;
@@ -63,6 +83,14 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     localStorage.setItem("pengeluaran_v2", JSON.stringify(pengeluaran));
   }, [pengeluaran]);
+
+  useEffect(() => {
+    localStorage.setItem("uangKas", JSON.stringify(uangKas));
+  }, [uangKas]);
+
+  useEffect(() => {
+    localStorage.setItem("pengeluaranKas", JSON.stringify(pengeluaranKas));
+  }, [pengeluaranKas]);
 
   useEffect(() => {
     localStorage.setItem("rekening", JSON.stringify(rekening));
@@ -102,6 +130,24 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     setPengeluaran(pengeluaran.filter((p) => p.id !== id));
   };
 
+  const addUangKas = (data: Omit<UangKas, "id">) => {
+    const newUangKas: UangKas = { ...data, id: Date.now().toString() };
+    setUangKas([...uangKas, newUangKas]);
+  };
+
+  const deleteUangKas = (id: string) => {
+    setUangKas(uangKas.filter((t) => t.id !== id));
+  };
+
+  const addPengeluaranKas = (data: Omit<PengeluaranKas, "id">) => {
+    const newPengeluaran: PengeluaranKas = { ...data, id: Date.now().toString() };
+    setPengeluaranKas([...pengeluaranKas, newPengeluaran]);
+  };
+
+  const deletePengeluaranKas = (id: string) => {
+    setPengeluaranKas(pengeluaranKas.filter((p) => p.id !== id));
+  };
+
   const updateRekening = (data: Rekening) => {
     setRekening(data);
   };
@@ -118,6 +164,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const deleteUser = (id: string) => {
     setUsers(users.filter((u) => u.id !== id));
     setTabungan(tabungan.filter((t) => t.userId !== id));
+    setUangKas(uangKas.filter((k) => k.userId !== id));
   };
 
   return (
@@ -127,14 +174,24 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         login,
         logout,
         users,
+        
         tabungan,
         pengeluaran,
-        rekening,
         addTabungan,
         deleteTabungan,
         addPengeluaran,
         deletePengeluaran,
+
+        uangKas,
+        pengeluaranKas,
+        addUangKas,
+        deleteUangKas,
+        addPengeluaranKas,
+        deletePengeluaranKas,
+
+        rekening,
         updateRekening,
+        
         addUser,
         editUser,
         deleteUser,

@@ -22,6 +22,21 @@ export interface Pengeluaran {
   date: string;
 }
 
+export interface UangKas {
+  id: string;
+  userId: string;
+  amount: number;
+  month: string;
+  date: string;
+}
+
+export interface PengeluaranKas {
+  id: string;
+  description: string;
+  amount: number;
+  date: string;
+}
+
 export interface Rekening {
   bankName: string;
   accountNumber: string;
