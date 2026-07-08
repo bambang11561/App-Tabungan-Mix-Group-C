@@ -60,6 +60,12 @@ export default function Dashboard() {
     return users.filter(u => u.role === "user" && !paidUserIds.includes(u.id));
   }, [tabungan, users]);
 
+  const belumBayarKasThisMonth = useMemo(() => {
+    const currentMonth = "Jul-26";
+    const paidKasUserIds = uangKas.filter(t => t.month === currentMonth).map(t => t.userId);
+    return users.filter(u => u.role === "user" && !paidKasUserIds.includes(u.id));
+  }, [uangKas, users]);
+
   const handleDownloadLaporan = () => {
     const reportDate = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
     
@@ -87,7 +93,19 @@ export default function Dashboard() {
       belumBayarThisMonth.forEach(u => {
         text += `- ${u.nama}\n`;
       });
-      text += `\nMohon untuk segera melunasi. Terima kasih. 🙏\n`;
+      text += `\n`;
+    }
+
+    if (belumBayarKasThisMonth.length > 0) {
+      text += `*Tunggakan Kas Bulan Ini:* ${belumBayarKasThisMonth.length} Orang\n`;
+      belumBayarKasThisMonth.forEach(u => {
+        text += `- ${u.nama}\n`;
+      });
+      text += `\n`;
+    }
+
+    if (belumBayarThisMonth.length > 0 || belumBayarKasThisMonth.length > 0) {
+      text += `Mohon untuk segera melunasi. Terima kasih. 🙏\n`;
     }
     
     const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
@@ -111,7 +129,7 @@ export default function Dashboard() {
         </Button>
       </div>
       
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 sm:gap-6">
         <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
           <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Total Saldo Gabungan</p>
           <h3 className="text-xl sm:text-2xl font-black text-blue-600">{formatIDR(totalSaldoUtama)}</h3>
@@ -141,6 +159,14 @@ export default function Dashboard() {
           <p className="text-xl sm:text-2xl font-black text-red-500">{belumBayarThisMonth.length} <span className="text-sm text-slate-400 font-normal underline">Orang</span></p>
           <div className="mt-2 flex items-center text-[10px] text-red-400 font-bold uppercase">
             <span>Tunggakan Tabungan</span>
+          </div>
+        </div>
+
+        <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Belum Membayar</p>
+          <p className="text-xl sm:text-2xl font-black text-red-500">{belumBayarKasThisMonth.length} <span className="text-sm text-slate-400 font-normal underline">Orang</span></p>
+          <div className="mt-2 flex items-center text-[10px] text-red-400 font-bold uppercase">
+            <span>Tunggakan Kas</span>
           </div>
         </div>
       </div>
@@ -237,49 +263,90 @@ export default function Dashboard() {
         </div>
       </div>
       
-      {/* Table for Belum Bayar */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Daftar Belum Membayar Tabungan (Jul-26)</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {belumBayarThisMonth.length > 0 ? (
-            <div className="overflow-x-auto rounded-xl border border-slate-100">
-              <table className="w-full text-sm text-left">
-                <thead className="text-[10px] text-slate-400 font-bold uppercase tracking-wider bg-slate-50 border-b border-slate-100">
-                  <tr>
-                    <th className="px-6 py-4">NRP</th>
-                    <th className="px-6 py-4">Nama Lengkap</th>
-                    <th className="px-6 py-4">Status</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {belumBayarThisMonth.map((user) => (
-                    <tr key={user.id} className="hover:bg-slate-50 transition-colors">
-                      <td className="px-6 py-4 font-mono text-slate-500">{user.nrp}</td>
-                      <td className="px-6 py-4 font-bold text-slate-800">
-                        {user.nama}
-                        <span className="ml-2 text-[10px] font-bold text-red-500 bg-red-50 px-2 py-0.5 rounded-md border border-red-100">
-                          Rp 50.000
-                        </span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-red-50 text-red-600 border border-red-100">
-                          Belum Bayar
-                        </span>
-                      </td>
+      {/* Tables for Belum Bayar */}
+      <div className="grid gap-6 md:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>Belum Membayar Tabungan (Jul-26)</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {belumBayarThisMonth.length > 0 ? (
+              <div className="overflow-x-auto rounded-xl border border-slate-100">
+                <table className="w-full text-sm text-left">
+                  <thead className="text-[10px] text-slate-400 font-bold uppercase tracking-wider bg-slate-50 border-b border-slate-100">
+                    <tr>
+                      <th className="px-6 py-4">Nama Lengkap</th>
+                      <th className="px-6 py-4">Status</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <div className="text-center py-8 text-slate-500">
-              <p>Semua anggota sudah membayar tabungan bulan ini.</p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {belumBayarThisMonth.map((user) => (
+                      <tr key={user.id} className="hover:bg-slate-50 transition-colors">
+                        <td className="px-6 py-4 font-bold text-slate-800">
+                          <div className="flex flex-col">
+                            <span>{user.nama}</span>
+                            <span className="font-mono text-xs text-slate-500 font-normal">{user.nrp}</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-red-50 text-red-600 border border-red-100">
+                            Belum Bayar
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="text-center py-8 text-slate-500">
+                <p>Semua anggota sudah membayar tabungan bulan ini.</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Belum Membayar Kas (Jul-26)</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {belumBayarKasThisMonth.length > 0 ? (
+              <div className="overflow-x-auto rounded-xl border border-slate-100">
+                <table className="w-full text-sm text-left">
+                  <thead className="text-[10px] text-slate-400 font-bold uppercase tracking-wider bg-slate-50 border-b border-slate-100">
+                    <tr>
+                      <th className="px-6 py-4">Nama Lengkap</th>
+                      <th className="px-6 py-4">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {belumBayarKasThisMonth.map((user) => (
+                      <tr key={user.id} className="hover:bg-slate-50 transition-colors">
+                        <td className="px-6 py-4 font-bold text-slate-800">
+                          <div className="flex flex-col">
+                            <span>{user.nama}</span>
+                            <span className="font-mono text-xs text-slate-500 font-normal">{user.nrp}</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-red-50 text-red-600 border border-red-100">
+                            Belum Bayar
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="text-center py-8 text-slate-500">
+                <p>Semua anggota sudah membayar kas bulan ini.</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
