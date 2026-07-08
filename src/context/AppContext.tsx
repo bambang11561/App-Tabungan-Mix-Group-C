@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { User, Tabungan, Pengeluaran, UangKas, PengeluaranKas, Rekening } from "../types";
 import { initialUsers, initialTabungan, initialPengeluaran, defaultRekening } from "../data";
+import { collection, onSnapshot, doc, setDoc, deleteDoc, updateDoc, getDocs } from "firebase/firestore";
+import { db } from "../firebase";
 
 interface AppContextType {
   currentUser: User | null;
@@ -37,64 +39,64 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     const saved = localStorage.getItem("currentUser");
     return saved ? JSON.parse(saved) : null;
   });
-
-  const [users, setUsers] = useState<User[]>(() => {
-    const saved = localStorage.getItem("users");
-    return saved ? JSON.parse(saved) : initialUsers;
-  });
-
-  const [tabungan, setTabungan] = useState<Tabungan[]>(() => {
-    const saved = localStorage.getItem("tabungan");
-    return saved ? JSON.parse(saved) : initialTabungan;
-  });
-
-  const [pengeluaran, setPengeluaran] = useState<Pengeluaran[]>(() => {
-    const saved = localStorage.getItem("pengeluaran_v2");
-    return saved ? JSON.parse(saved) : initialPengeluaran;
-  });
-
-  const [uangKas, setUangKas] = useState<UangKas[]>(() => {
-    const saved = localStorage.getItem("uangKas");
-    return saved ? JSON.parse(saved) : [];
-  });
-
-  const [pengeluaranKas, setPengeluaranKas] = useState<PengeluaranKas[]>(() => {
-    const saved = localStorage.getItem("pengeluaranKas");
-    return saved ? JSON.parse(saved) : [];
-  });
-
-  const [rekening, setRekening] = useState<Rekening>(() => {
-    const saved = localStorage.getItem("rekening");
-    return saved ? JSON.parse(saved) : defaultRekening;
-  });
+  
+  const [users, setUsers] = useState<User[]>([]);
+  const [tabungan, setTabungan] = useState<Tabungan[]>([]);
+  const [pengeluaran, setPengeluaran] = useState<Pengeluaran[]>([]);
+  const [uangKas, setUangKas] = useState<UangKas[]>([]);
+  const [pengeluaranKas, setPengeluaranKas] = useState<PengeluaranKas[]>([]);
+  const [rekening, setRekening] = useState<Rekening>(defaultRekening);
 
   useEffect(() => {
     localStorage.setItem("currentUser", JSON.stringify(currentUser));
   }, [currentUser]);
 
   useEffect(() => {
-    localStorage.setItem("users", JSON.stringify(users));
-  }, [users]);
+    const seedDB = async () => {
+      try {
+        const usersSnap = await getDocs(collection(db, "users"));
+        if (usersSnap.empty) {
+          initialUsers.forEach(u => setDoc(doc(db, "users", u.id), u));
+          initialTabungan.forEach(t => setDoc(doc(db, "tabungan", t.id), t));
+          initialPengeluaran.forEach(p => setDoc(doc(db, "pengeluaran", p.id), p));
+          setDoc(doc(db, "rekening", "main"), defaultRekening);
+        }
+      } catch (err) {
+        console.error("Error seeding DB:", err);
+      }
+    };
+    seedDB();
 
-  useEffect(() => {
-    localStorage.setItem("tabungan", JSON.stringify(tabungan));
-  }, [tabungan]);
+    const unsubUsers = onSnapshot(collection(db, "users"), (snap) => {
+      setUsers(snap.docs.map(d => ({ id: d.id, ...d.data() } as User)));
+    });
+    const unsubTabungan = onSnapshot(collection(db, "tabungan"), (snap) => {
+      setTabungan(snap.docs.map(d => ({ id: d.id, ...d.data() } as Tabungan)));
+    });
+    const unsubPengeluaran = onSnapshot(collection(db, "pengeluaran"), (snap) => {
+      setPengeluaran(snap.docs.map(d => ({ id: d.id, ...d.data() } as Pengeluaran)));
+    });
+    const unsubUangKas = onSnapshot(collection(db, "uangKas"), (snap) => {
+      setUangKas(snap.docs.map(d => ({ id: d.id, ...d.data() } as UangKas)));
+    });
+    const unsubPengeluaranKas = onSnapshot(collection(db, "pengeluaranKas"), (snap) => {
+      setPengeluaranKas(snap.docs.map(d => ({ id: d.id, ...d.data() } as PengeluaranKas)));
+    });
+    const unsubRekening = onSnapshot(doc(db, "rekening", "main"), (docSnap) => {
+      if (docSnap.exists()) {
+        setRekening(docSnap.data() as Rekening);
+      }
+    });
 
-  useEffect(() => {
-    localStorage.setItem("pengeluaran_v2", JSON.stringify(pengeluaran));
-  }, [pengeluaran]);
-
-  useEffect(() => {
-    localStorage.setItem("uangKas", JSON.stringify(uangKas));
-  }, [uangKas]);
-
-  useEffect(() => {
-    localStorage.setItem("pengeluaranKas", JSON.stringify(pengeluaranKas));
-  }, [pengeluaranKas]);
-
-  useEffect(() => {
-    localStorage.setItem("rekening", JSON.stringify(rekening));
-  }, [rekening]);
+    return () => {
+      unsubUsers();
+      unsubTabungan();
+      unsubPengeluaran();
+      unsubUangKas();
+      unsubPengeluaranKas();
+      unsubRekening();
+    };
+  }, []);
 
   const login = (nrp: string, password?: string) => {
     const user = users.find((u) => u.nrp === nrp);
@@ -112,59 +114,59 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     setCurrentUser(null);
   };
 
-  const addTabungan = (data: Omit<Tabungan, "id">) => {
-    const newTabungan: Tabungan = { ...data, id: Date.now().toString() };
-    setTabungan([...tabungan, newTabungan]);
+  const addTabungan = async (data: Omit<Tabungan, "id">) => {
+    const id = Date.now().toString();
+    await setDoc(doc(db, "tabungan", id), { ...data, id });
   };
 
-  const deleteTabungan = (id: string) => {
-    setTabungan(tabungan.filter((t) => t.id !== id));
+  const deleteTabungan = async (id: string) => {
+    await deleteDoc(doc(db, "tabungan", id));
   };
 
-  const addPengeluaran = (data: Omit<Pengeluaran, "id">) => {
-    const newPengeluaran: Pengeluaran = { ...data, id: Date.now().toString() };
-    setPengeluaran([...pengeluaran, newPengeluaran]);
+  const addPengeluaran = async (data: Omit<Pengeluaran, "id">) => {
+    const id = Date.now().toString();
+    await setDoc(doc(db, "pengeluaran", id), { ...data, id });
   };
 
-  const deletePengeluaran = (id: string) => {
-    setPengeluaran(pengeluaran.filter((p) => p.id !== id));
+  const deletePengeluaran = async (id: string) => {
+    await deleteDoc(doc(db, "pengeluaran", id));
   };
 
-  const addUangKas = (data: Omit<UangKas, "id">) => {
-    const newUangKas: UangKas = { ...data, id: Date.now().toString() };
-    setUangKas([...uangKas, newUangKas]);
+  const addUangKas = async (data: Omit<UangKas, "id">) => {
+    const id = Date.now().toString();
+    await setDoc(doc(db, "uangKas", id), { ...data, id });
   };
 
-  const deleteUangKas = (id: string) => {
-    setUangKas(uangKas.filter((t) => t.id !== id));
+  const deleteUangKas = async (id: string) => {
+    await deleteDoc(doc(db, "uangKas", id));
   };
 
-  const addPengeluaranKas = (data: Omit<PengeluaranKas, "id">) => {
-    const newPengeluaran: PengeluaranKas = { ...data, id: Date.now().toString() };
-    setPengeluaranKas([...pengeluaranKas, newPengeluaran]);
+  const addPengeluaranKas = async (data: Omit<PengeluaranKas, "id">) => {
+    const id = Date.now().toString();
+    await setDoc(doc(db, "pengeluaranKas", id), { ...data, id });
   };
 
-  const deletePengeluaranKas = (id: string) => {
-    setPengeluaranKas(pengeluaranKas.filter((p) => p.id !== id));
+  const deletePengeluaranKas = async (id: string) => {
+    await deleteDoc(doc(db, "pengeluaranKas", id));
   };
 
-  const updateRekening = (data: Rekening) => {
-    setRekening(data);
+  const updateRekening = async (data: Rekening) => {
+    await setDoc(doc(db, "rekening", "main"), data);
   };
 
-  const addUser = (data: Omit<User, "id">) => {
-    const newUser: User = { ...data, id: Date.now().toString() };
-    setUsers([...users, newUser]);
+  const addUser = async (data: Omit<User, "id">) => {
+    const id = Date.now().toString();
+    await setDoc(doc(db, "users", id), { ...data, id });
   };
 
-  const editUser = (id: string, data: Partial<User>) => {
-    setUsers(users.map((u) => (u.id === id ? { ...u, ...data } : u)));
+  const editUser = async (id: string, data: Partial<User>) => {
+    await updateDoc(doc(db, "users", id), data);
   };
 
-  const deleteUser = (id: string) => {
-    setUsers(users.filter((u) => u.id !== id));
-    setTabungan(tabungan.filter((t) => t.userId !== id));
-    setUangKas(uangKas.filter((k) => k.userId !== id));
+  const deleteUser = async (id: string) => {
+    await deleteDoc(doc(db, "users", id));
+    tabungan.filter((t) => t.userId === id).forEach((t) => deleteDoc(doc(db, "tabungan", t.id)));
+    uangKas.filter((k) => k.userId === id).forEach((k) => deleteDoc(doc(db, "uangKas", k.id)));
   };
 
   return (
