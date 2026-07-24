@@ -4,7 +4,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "../components/ui/card"
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { formatIDR } from "../lib/utils";
-import { Wallet, TrendingDown, Users, AlertCircle, Building, Edit2, Check, X, Copy, Download } from "lucide-react";
+import { Wallet, TrendingDown, Users, AlertCircle, Building, Edit2, Check, X, Copy, Download, UserCheck, Shield } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
 import { months } from "../data";
 
@@ -39,6 +39,19 @@ export default function Dashboard() {
   const saldoKas = totalMasukKas - totalKeluarKas;
 
   const totalSaldoUtama = saldoTabungan + saldoKas;
+
+  // Personal user balance calculation based on logged in user ID/NRP
+  const myTabungan = useMemo(() => {
+    if (!currentUser) return 0;
+    return tabungan.filter(t => t.userId === currentUser.id).reduce((sum, t) => sum + t.amount, 0);
+  }, [tabungan, currentUser]);
+
+  const myKas = useMemo(() => {
+    if (!currentUser) return 0;
+    return uangKas.filter(k => k.userId === currentUser.id).reduce((sum, k) => sum + k.amount, 0);
+  }, [uangKas, currentUser]);
+
+  const myTotalSaldo = myTabungan + myKas;
 
   const totalPenabung = users.filter(u => u.role === "user").length;
 
@@ -122,12 +135,58 @@ export default function Dashboard() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <h2 className="text-2xl font-bold tracking-tight">Dashboard Utama</h2>
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight text-slate-900">Dashboard Utama</h2>
+          <p className="text-xs text-slate-500 mt-0.5">Ringkasan informasi saldo dan akun terhubung</p>
+        </div>
         <Button onClick={handleDownloadLaporan} className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white flex items-center justify-center gap-2">
           <Download className="h-4 w-4" />
           Unduh Laporan
         </Button>
       </div>
+      
+      {/* User Information & Personal Balance Card */}
+      {currentUser && (
+        <div className="bg-gradient-to-r from-[#0E1B3D] via-slate-800 to-blue-900 text-white rounded-2xl p-5 sm:p-6 shadow-md relative overflow-hidden border border-slate-700/50">
+          <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-white font-black text-xl shadow-lg shadow-blue-500/20 shrink-0 border border-white/20">
+                {currentUser.nama.substring(0, 2).toUpperCase()}
+              </div>
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-blue-500/20 text-blue-300 border border-blue-400/30">
+                    <UserCheck className="w-3 h-3" />
+                    {currentUser.role === "admin" ? "Administrator" : "Anggota Group"}
+                  </span>
+                </div>
+                <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight">{currentUser.nama}</h3>
+                <p className="text-xs text-slate-300 font-mono mt-0.5 flex items-center gap-2">
+                  <span>NRP:</span>
+                  <span className="font-bold text-blue-300 bg-blue-950/80 px-2 py-0.5 rounded border border-blue-800/60">{currentUser.nrp}</span>
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-white/10 p-4 rounded-xl border border-white/10 backdrop-blur-md">
+              <div className="px-2">
+                <p className="text-[10px] uppercase font-bold text-blue-200 tracking-wider">Tabungan Saya</p>
+                <p className="text-base sm:text-lg font-black text-emerald-400 mt-0.5">{formatIDR(myTabungan)}</p>
+              </div>
+              <div className="px-2 sm:border-l border-white/15">
+                <p className="text-[10px] uppercase font-bold text-blue-200 tracking-wider">Setoran Kas Saya</p>
+                <p className="text-base sm:text-lg font-black text-indigo-300 mt-0.5">{formatIDR(myKas)}</p>
+              </div>
+              <div className="px-2 sm:border-l border-white/15">
+                <p className="text-[10px] uppercase font-bold text-blue-200 tracking-wider">Total Akumulasi Saya</p>
+                <p className="text-base sm:text-lg font-black text-white mt-0.5">{formatIDR(myTotalSaldo)}</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="absolute -right-10 -bottom-10 w-48 h-48 bg-blue-500/10 rounded-full blur-2xl pointer-events-none"></div>
+        </div>
+      )}
       
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4 sm:gap-6">
         <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">

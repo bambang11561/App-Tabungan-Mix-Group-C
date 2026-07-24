@@ -98,9 +98,10 @@ export default function DashboardLayout() {
         </div>
         <div className="p-4 mt-auto">
           <div className="bg-blue-600 rounded-xl p-4 mb-4">
-            <p className="text-xs text-blue-200 mb-1">Status Pengguna</p>
-            <p className="text-sm font-semibold mb-2 truncate">{currentUser?.nama}</p>
-            <p className="text-xs font-bold uppercase mb-3">{currentUser?.role}</p>
+            <p className="text-xs text-blue-200 mb-0.5">Status Pengguna</p>
+            <p className="text-sm font-bold truncate">{currentUser?.nama}</p>
+            <p className="text-xs font-mono text-blue-200 mb-1">NRP: {currentUser?.nrp}</p>
+            <p className="text-[10px] font-bold uppercase tracking-wider bg-blue-700/60 inline-block px-2 py-0.5 rounded text-blue-100 mb-3">{currentUser?.role}</p>
             <button
               onClick={handleLogout}
               className="w-full flex items-center justify-center gap-2 bg-white text-blue-600 text-xs font-bold py-2 rounded-lg hover:bg-slate-50 transition-colors"
@@ -167,8 +168,9 @@ export default function DashboardLayout() {
 
             <div className="p-4 mt-auto">
               <div className="bg-blue-600 rounded-xl p-4 mb-4">
-                <p className="text-xs text-blue-200 mb-1">Status Pengguna</p>
-                <p className="text-sm font-semibold mb-2 truncate">{currentUser?.nama}</p>
+                <p className="text-xs text-blue-200 mb-0.5">Status Pengguna</p>
+                <p className="text-sm font-bold truncate">{currentUser?.nama}</p>
+                <p className="text-xs font-mono text-blue-200 mb-2">NRP: {currentUser?.nrp}</p>
                 <button
                   onClick={handleLogout}
                   className="w-full flex items-center justify-center gap-2 bg-white text-blue-600 text-xs font-bold py-2 rounded-lg hover:bg-slate-50 transition-colors"
@@ -201,7 +203,7 @@ export default function DashboardLayout() {
           <div className="flex items-center gap-4">
             <div className="text-right hidden sm:block">
               <p className="text-sm font-bold text-slate-800">{currentUser?.nama}</p>
-              <p className="text-[10px] text-green-500 font-bold uppercase tracking-widest">Online</p>
+              <p className="text-xs font-mono text-slate-500">NRP: {currentUser?.nrp}</p>
             </div>
             <div className="w-10 h-10 rounded-full bg-slate-200 border-2 border-white shadow-sm flex items-center justify-center overflow-hidden shrink-0">
               <div className="w-full h-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-sm">
