@@ -16,7 +16,7 @@ export default function SaldoKas() {
       const userKas = uangKas.filter(t => t.userId === u.id);
       const total = userKas.reduce((sum, t) => sum + t.amount, 0);
       return { ...u, total };
-    }).sort((a, b) => b.total - a.total);
+    }).sort((a, b) => a.nrp.localeCompare(b.nrp, undefined, { numeric: true, sensitivity: 'base' }));
   }, [users, uangKas]);
 
   return (

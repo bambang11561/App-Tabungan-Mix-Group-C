@@ -15,10 +15,12 @@ export default function DataKasMixing() {
   const [formData, setFormData] = useState({ nrp: "", nama: "" });
 
   const penabungList = users.filter(u => u.role === "user");
-  const filteredUsers = penabungList.filter(u => 
-    u.nama.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    u.nrp.includes(searchTerm)
-  );
+  const filteredUsers = penabungList
+    .filter(u => 
+      u.nama.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      u.nrp.includes(searchTerm)
+    )
+    .sort((a, b) => a.nrp.localeCompare(b.nrp, undefined, { numeric: true, sensitivity: 'base' }));
 
   const handleSaveAdd = () => {
     if (formData.nrp && formData.nama) {

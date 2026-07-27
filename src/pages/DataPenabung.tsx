@@ -31,7 +31,7 @@ export default function DataPenabung() {
           history: userTabungan
         };
       })
-      .sort((a, b) => b.totalAmount - a.totalAmount);
+      .sort((a, b) => a.nrp.localeCompare(b.nrp, undefined, { numeric: true, sensitivity: 'base' }));
   }, [penabungList, tabungan, searchTerm]);
 
   const handleAddUser = (e: React.FormEvent) => {

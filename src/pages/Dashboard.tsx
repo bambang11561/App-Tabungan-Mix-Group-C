@@ -70,13 +70,17 @@ export default function Dashboard() {
   const belumBayarThisMonth = useMemo(() => {
     const currentMonth = "Jul-26"; // Assuming current logic based on demo data
     const paidUserIds = tabungan.filter(t => t.month === currentMonth).map(t => t.userId);
-    return users.filter(u => u.role === "user" && !paidUserIds.includes(u.id));
+    return users
+      .filter(u => u.role === "user" && !paidUserIds.includes(u.id))
+      .sort((a, b) => a.nrp.localeCompare(b.nrp, undefined, { numeric: true, sensitivity: 'base' }));
   }, [tabungan, users]);
 
   const belumBayarKasThisMonth = useMemo(() => {
     const currentMonth = "Jul-26";
     const paidKasUserIds = uangKas.filter(t => t.month === currentMonth).map(t => t.userId);
-    return users.filter(u => u.role === "user" && !paidKasUserIds.includes(u.id));
+    return users
+      .filter(u => u.role === "user" && !paidKasUserIds.includes(u.id))
+      .sort((a, b) => a.nrp.localeCompare(b.nrp, undefined, { numeric: true, sensitivity: 'base' }));
   }, [uangKas, users]);
 
   const handleDownloadLaporan = () => {

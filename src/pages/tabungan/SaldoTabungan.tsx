@@ -16,7 +16,7 @@ export default function SaldoTabungan() {
       const userTabungan = tabungan.filter(t => t.userId === u.id);
       const total = userTabungan.reduce((sum, t) => sum + t.amount, 0);
       return { ...u, total };
-    }).sort((a, b) => b.total - a.total);
+    }).sort((a, b) => a.nrp.localeCompare(b.nrp, undefined, { numeric: true, sensitivity: 'base' }));
   }, [users, tabungan]);
 
   return (

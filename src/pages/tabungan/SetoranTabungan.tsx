@@ -22,7 +22,9 @@ export default function SetoranTabungan() {
   const [amountMasuk, setAmountMasuk] = useState("50000");
   const [tanggalMasuk, setTanggalMasuk] = useState(new Date().toISOString().split('T')[0]);
 
-  const penabungList = users.filter(u => u.role === "user");
+  const penabungList = users
+    .filter(u => u.role === "user")
+    .sort((a, b) => a.nrp.localeCompare(b.nrp, undefined, { numeric: true, sensitivity: 'base' }));
 
   const handleAddPemasukan = (e: React.FormEvent) => {
     e.preventDefault();
