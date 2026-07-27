@@ -4,7 +4,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "../components/ui/card"
 import { Input } from "../components/ui/input";
 import { Button } from "../components/ui/button";
 import { formatIDR } from "../lib/utils";
-import { Search, UserPlus, Trash2, Pencil } from "lucide-react";
+import { Search, UserPlus, Trash2, Pencil, Lock, AlertCircle } from "lucide-react";
 
 export default function DataPenabung() {
   const { users, tabungan, currentUser, deleteUser, addUser, editUser } = useAppContext();
@@ -77,6 +77,13 @@ export default function DataPenabung() {
         )}
       </div>
 
+      {currentUser?.role !== "admin" && (
+        <div className="p-3.5 bg-amber-50 border border-amber-200/80 rounded-xl text-xs text-amber-800 flex items-center gap-2.5 shadow-sm">
+          <AlertCircle className="h-4 w-4 shrink-0 text-amber-600" />
+          <span>Informasi saldo tabungan anggota lain disembunyikan untuk privasi. Anda hanya dapat melihat saldo milik akun Anda sendiri (NRP: <strong className="font-mono text-amber-950">{currentUser?.nrp}</strong>).</span>
+        </div>
+      )}
+
       {showAddForm && currentUser?.role === "admin" && (
         <Card className="border-blue-100 bg-white">
           <CardContent className="pt-6">
@@ -140,8 +147,9 @@ export default function DataPenabung() {
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {filteredData.length > 0 ? (
-                  filteredData.map((user, index) => (
-                    editingUserId === user.id ? (
+                  filteredData.map((user, index) => {
+                    const isSelfOrAdmin = currentUser?.role === "admin" || user.id === currentUser?.id || user.nrp === currentUser?.nrp;
+                    return editingUserId === user.id ? (
                       <tr key={user.id} className="bg-blue-50/50 transition-colors">
                         <td className="px-6 py-4 whitespace-nowrap text-slate-400">{index + 1}</td>
                         <td className="px-6 py-4 whitespace-nowrap">
@@ -181,12 +189,24 @@ export default function DataPenabung() {
                         </td>
                       </tr>
                     ) : (
-                    <tr key={user.id} className="hover:bg-slate-50 transition-colors">
+                    <tr key={user.id} className={`hover:bg-slate-50 transition-colors ${user.id === currentUser?.id ? "bg-blue-50/30" : ""}`}>
                       <td className="px-6 py-4 whitespace-nowrap text-slate-400">{index + 1}</td>
                       <td className="px-6 py-4 whitespace-nowrap font-mono text-slate-500">{user.nrp}</td>
-                      <td className="px-6 py-4 whitespace-nowrap font-bold text-slate-800">{user.nama}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right font-black text-blue-600">
-                        {formatIDR(user.totalAmount)}
+                      <td className="px-6 py-4 whitespace-nowrap font-bold text-slate-800 flex items-center gap-2">
+                        <span>{user.nama}</span>
+                        {user.id === currentUser?.id && (
+                          <span className="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded font-bold">Saya</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right font-black">
+                        {isSelfOrAdmin ? (
+                          <span className="text-blue-600">{formatIDR(user.totalAmount)}</span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 text-slate-400 font-mono text-xs font-normal bg-slate-100 px-2.5 py-1 rounded-md">
+                            <Lock className="w-3 h-3 text-slate-400" />
+                            *** (Rahasia)
+                          </span>
+                        )}
                       </td>
                       {currentUser?.role === "admin" && (
                         <td className="px-6 py-4 whitespace-nowrap text-center">
@@ -215,8 +235,8 @@ export default function DataPenabung() {
                         </td>
                       )}
                     </tr>
-                    )
-                  ))
+                    );
+                  })
                 ) : (
                   <tr>
                     <td colSpan={currentUser?.role === "admin" ? 5 : 4} className="px-6 py-8 text-center text-slate-500">

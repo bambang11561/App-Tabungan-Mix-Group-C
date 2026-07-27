@@ -2,9 +2,10 @@ import React, { useMemo } from "react";
 import { useAppContext } from "../../context/AppContext";
 import { Card, CardHeader, CardTitle, CardContent } from "../../components/ui/card";
 import { formatIDR } from "../../lib/utils";
+import { Lock, AlertCircle } from "lucide-react";
 
 export default function SaldoTabungan() {
-  const { users, tabungan, pengeluaran } = useAppContext();
+  const { users, tabungan, pengeluaran, currentUser } = useAppContext();
 
   const totalPemasukan = tabungan.reduce((sum, t) => sum + t.amount, 0);
   const totalPengeluaran = pengeluaran.reduce((sum, p) => sum + p.amount, 0);
@@ -22,8 +23,15 @@ export default function SaldoTabungan() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold tracking-tight text-slate-900">Saldo Tabungan</h1>
-        <p className="text-sm text-slate-500">Lihat total saldo tabungan setiap anggota.</p>
+        <p className="text-sm text-slate-500">Lihat total saldo tabungan anggota.</p>
       </div>
+
+      {currentUser?.role !== "admin" && (
+        <div className="p-3.5 bg-amber-50 border border-amber-200/80 rounded-xl text-xs text-amber-800 flex items-center gap-2.5 shadow-sm">
+          <AlertCircle className="h-4 w-4 shrink-0 text-amber-600" />
+          <span>Sesuai kebijakan privasi, Anda hanya dapat melihat saldo tabungan milik NRP Anda (<strong>{currentUser?.nrp}</strong>). Saldo anggota lain disembunyikan.</span>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Card className="bg-emerald-50/50 border-emerald-100">
@@ -61,19 +69,32 @@ export default function SaldoTabungan() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {usersSaldo.map((u) => (
-                  <tr key={u.id} className="hover:bg-slate-50 transition-colors">
-                    <td className="px-6 py-4 whitespace-nowrap text-slate-500 font-medium">
-                      {u.nrp}
-                    </td>
-                    <td className="px-6 py-4 font-bold text-slate-800">
-                      {u.nama}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right font-black text-emerald-600">
-                      {formatIDR(u.total)}
-                    </td>
-                  </tr>
-                ))}
+                {usersSaldo.map((u) => {
+                  const isSelfOrAdmin = currentUser?.role === "admin" || u.id === currentUser?.id || u.nrp === currentUser?.nrp;
+                  return (
+                    <tr key={u.id} className={`hover:bg-slate-50 transition-colors ${u.id === currentUser?.id ? "bg-emerald-50/30" : ""}`}>
+                      <td className="px-6 py-4 whitespace-nowrap text-slate-500 font-mono">
+                        {u.nrp}
+                      </td>
+                      <td className="px-6 py-4 font-bold text-slate-800 flex items-center gap-2">
+                        <span>{u.nama}</span>
+                        {u.id === currentUser?.id && (
+                          <span className="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-bold">Saya</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right font-black">
+                        {isSelfOrAdmin ? (
+                          <span className="text-emerald-600">{formatIDR(u.total)}</span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 text-slate-400 font-mono text-xs font-normal bg-slate-100 px-2.5 py-1 rounded-md">
+                            <Lock className="w-3 h-3 text-slate-400" />
+                            *** (Rahasia)
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

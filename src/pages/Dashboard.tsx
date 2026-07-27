@@ -84,14 +84,23 @@ export default function Dashboard() {
     
     let text = `*RINGKASAN KEUANGAN*\n`;
     text += `*Tanggal:* ${reportDate}\n\n`;
-    text += `*SALDO TABUNGAN*\n`;
-    text += `Total Pemasukan: ${formatIDR(totalMasukTabungan)}\n`;
-    text += `Total Pengeluaran: ${formatIDR(totalKeluarTabungan)}\n`;
+
+    if (currentUser) {
+      text += `*INFO AKUN SAYA*\n`;
+      text += `Nama: ${currentUser.nama}\n`;
+      text += `NRP: ${currentUser.nrp}\n`;
+      text += `Tabungan Saya: ${formatIDR(myTabungan)}\n`;
+      text += `Setoran Kas Saya: ${formatIDR(myKas)}\n`;
+      text += `Total Akumulasi Saya: ${formatIDR(myTotalSaldo)}\n\n`;
+    }
+
+    text += `*SALDO GABUNGAN GROUP*\n`;
+    text += `Total Pemasukan Tabungan: ${formatIDR(totalMasukTabungan)}\n`;
+    text += `Total Pengeluaran Tabungan: ${formatIDR(totalKeluarTabungan)}\n`;
     text += `Saldo Bersih Tabungan: ${formatIDR(saldoTabungan)}\n\n`;
 
-    text += `*SALDO KAS*\n`;
-    text += `Total Pemasukan: ${formatIDR(totalMasukKas)}\n`;
-    text += `Total Pengeluaran: ${formatIDR(totalKeluarKas)}\n`;
+    text += `Total Pemasukan Kas: ${formatIDR(totalMasukKas)}\n`;
+    text += `Total Pengeluaran Kas: ${formatIDR(totalKeluarKas)}\n`;
     text += `Saldo Bersih Kas: ${formatIDR(saldoKas)}\n\n`;
     
     text += `*TOTAL SALDO KESELURUHAN:* ${formatIDR(totalSaldoUtama)}\n\n`;

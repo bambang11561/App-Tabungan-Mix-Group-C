@@ -5,7 +5,7 @@ import { Input } from "../../components/ui/input";
 import { Button } from "../../components/ui/button";
 import { formatIDR } from "../../lib/utils";
 import { months } from "../../data";
-import { ArrowDownCircle, Trash2 } from "lucide-react";
+import { ArrowDownCircle, Trash2, AlertCircle } from "lucide-react";
 
 export default function SetoranTabungan() {
   const { 
@@ -38,12 +38,17 @@ export default function SetoranTabungan() {
     }
   };
 
-  const history = tabungan.map(t => ({
+  const rawHistory = tabungan.map(t => ({
     ...t,
     type: "masuk",
     userName: users.find(u => u.id === t.userId)?.nama || "Unknown",
     timestamp: new Date(t.date).getTime()
-  })).sort((a, b) => b.timestamp - a.timestamp).slice(0, 50);
+  }));
+
+  const history = (currentUser?.role === "admin"
+    ? rawHistory
+    : rawHistory.filter(t => t.userId === currentUser?.id)
+  ).sort((a, b) => b.timestamp - a.timestamp).slice(0, 50);
 
   return (
     <div className="space-y-6">
@@ -51,6 +56,13 @@ export default function SetoranTabungan() {
         <h1 className="text-2xl font-bold tracking-tight text-slate-900">Catatan Setoran Tabungan</h1>
         <p className="text-sm text-slate-500">Kelola riwayat setoran tabungan anggota.</p>
       </div>
+
+      {currentUser?.role !== "admin" && (
+        <div className="p-3.5 bg-amber-50 border border-amber-200/80 rounded-xl text-xs text-amber-800 flex items-center gap-2.5 shadow-sm">
+          <AlertCircle className="h-4 w-4 shrink-0 text-amber-600" />
+          <span>Menampilkan riwayat setoran tabungan khusus milik akun Anda (NRP: <strong className="font-mono text-amber-950">{currentUser?.nrp}</strong>).</span>
+        </div>
+      )}
 
       {currentUser?.role === "admin" && (
         <Card>
