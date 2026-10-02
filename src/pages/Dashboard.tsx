@@ -41,10 +41,17 @@ export default function Dashboard() {
   const totalSaldoUtama = saldoTabungan + saldoKas;
 
   // Personal user balance calculation based on logged in user ID/NRP
-  const myTabungan = useMemo(() => {
+  const mySetoranTabungan = useMemo(() => {
     if (!currentUser) return 0;
     return tabungan.filter(t => t.userId === currentUser.id).reduce((sum, t) => sum + t.amount, 0);
   }, [tabungan, currentUser]);
+
+  const myPengeluaranTabungan = useMemo(() => {
+    if (!currentUser) return 0;
+    return pengeluaran.filter(p => p.userId === currentUser.id).reduce((sum, p) => sum + p.amount, 0);
+  }, [pengeluaran, currentUser]);
+
+  const myTabungan = mySetoranTabungan - myPengeluaranTabungan;
 
   const myKas = useMemo(() => {
     if (!currentUser) return 0;
@@ -93,7 +100,11 @@ export default function Dashboard() {
       text += `*INFO AKUN SAYA*\n`;
       text += `Nama: ${currentUser.nama}\n`;
       text += `NRP: ${currentUser.nrp}\n`;
-      text += `Tabungan Saya: ${formatIDR(myTabungan)}\n`;
+      text += `Setoran Tabungan Saya: ${formatIDR(mySetoranTabungan)}\n`;
+      if (myPengeluaranTabungan > 0) {
+        text += `Penarikan/Pengeluaran Tabungan: ${formatIDR(myPengeluaranTabungan)}\n`;
+      }
+      text += `Saldo Bersih Tabungan Saya: ${formatIDR(myTabungan)}\n`;
       text += `Setoran Kas Saya: ${formatIDR(myKas)}\n`;
       text += `Total Akumulasi Saya: ${formatIDR(myTotalSaldo)}\n\n`;
     }

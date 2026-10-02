@@ -166,6 +166,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const deleteUser = async (id: string) => {
     await deleteDoc(doc(db, "users", id));
     tabungan.filter((t) => t.userId === id).forEach((t) => deleteDoc(doc(db, "tabungan", t.id)));
+    pengeluaran.filter((p) => p.userId === id).forEach((p) => deleteDoc(doc(db, "pengeluaran", p.id)));
     uangKas.filter((k) => k.userId === id).forEach((k) => deleteDoc(doc(db, "uangKas", k.id)));
   };
 

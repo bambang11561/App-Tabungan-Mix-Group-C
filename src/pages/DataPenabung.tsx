@@ -7,7 +7,7 @@ import { formatIDR } from "../lib/utils";
 import { Search, UserPlus, Trash2, Pencil, Lock, AlertCircle } from "lucide-react";
 
 export default function DataPenabung() {
-  const { users, tabungan, currentUser, deleteUser, addUser, editUser } = useAppContext();
+  const { users, tabungan, pengeluaran, currentUser, deleteUser, addUser, editUser } = useAppContext();
   const [searchTerm, setSearchTerm] = useState("");
   const [showAddForm, setShowAddForm] = useState(false);
   const [newUser, setNewUser] = useState({ nrp: "", nama: "" });
@@ -24,15 +24,21 @@ export default function DataPenabung() {
       )
       .map(user => {
         const userTabungan = tabungan.filter(t => t.userId === user.id);
-        const totalAmount = userTabungan.reduce((sum, t) => sum + t.amount, 0);
+        const totalMasuk = userTabungan.reduce((sum, t) => sum + t.amount, 0);
+        const userPengeluaran = pengeluaran.filter(p => p.userId === user.id);
+        const totalKeluar = userPengeluaran.reduce((sum, p) => sum + p.amount, 0);
+        const totalAmount = totalMasuk - totalKeluar;
         return {
           ...user,
+          totalMasuk,
+          totalKeluar,
           totalAmount,
-          history: userTabungan
+          history: userTabungan,
+          pengeluaranHistory: userPengeluaran
         };
       })
       .sort((a, b) => a.nrp.localeCompare(b.nrp, undefined, { numeric: true, sensitivity: 'base' }));
-  }, [penabungList, tabungan, searchTerm]);
+  }, [penabungList, tabungan, pengeluaran, searchTerm]);
 
   const handleAddUser = (e: React.FormEvent) => {
     e.preventDefault();

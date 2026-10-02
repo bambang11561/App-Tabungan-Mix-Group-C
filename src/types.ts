@@ -17,6 +17,7 @@ export interface Tabungan {
 
 export interface Pengeluaran {
   id: string;
+  userId?: string;
   description: string;
   amount: number;
   date: string;

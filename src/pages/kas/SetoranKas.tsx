@@ -6,6 +6,7 @@ import { Button } from "../../components/ui/button";
 import { formatIDR } from "../../lib/utils";
 import { months } from "../../data";
 import { ArrowDownCircle, Trash2, AlertCircle } from "lucide-react";
+import DownloadSetoranMenu from "../../components/DownloadSetoranMenu";
 
 export default function SetoranKas() {
   const { 
@@ -40,17 +41,21 @@ export default function SetoranKas() {
     }
   };
 
-  const rawHistory = uangKas.map(t => ({
-    ...t,
-    type: "masuk",
-    userName: users.find(u => u.id === t.userId)?.nama || "Unknown",
-    timestamp: new Date(t.date).getTime()
-  }));
+  const rawHistory = uangKas.map(t => {
+    const u = users.find(user => user.id === t.userId);
+    return {
+      ...t,
+      type: "masuk",
+      userName: u?.nama || "Unknown",
+      userNrp: u?.nrp || "-",
+      timestamp: new Date(t.date).getTime()
+    };
+  });
 
   const history = (currentUser?.role === "admin"
     ? rawHistory
     : rawHistory.filter(t => t.userId === currentUser?.id)
-  ).sort((a, b) => b.timestamp - a.timestamp).slice(0, 50);
+  ).sort((a, b) => b.timestamp - a.timestamp);
 
   return (
     <div className="space-y-6">
@@ -130,8 +135,22 @@ export default function SetoranKas() {
       )}
 
       <Card>
-        <CardHeader>
-          <CardTitle>Riwayat Setoran Uang Kas</CardTitle>
+        <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4">
+          <div>
+            <CardTitle>Riwayat Setoran Uang Kas</CardTitle>
+            <p className="text-xs text-slate-500 mt-1">
+              {currentUser?.role === "admin"
+                ? `Total ${history.length} setoran kas tercatat untuk seluruh anggota.`
+                : `Menampilkan ${history.length} setoran kas akun Anda.`}
+            </p>
+          </div>
+          <DownloadSetoranMenu 
+            title="Riwayat Setoran Kas"
+            category="kas"
+            records={rawHistory}
+            allUsers={users}
+            currentUser={currentUser}
+          />
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto rounded-xl border border-slate-100 mt-2">
